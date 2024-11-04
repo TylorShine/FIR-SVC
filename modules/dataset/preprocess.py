@@ -5,7 +5,7 @@ import numpy as np
 import librosa
 from tqdm import tqdm
 
-from modules.extractors import F0Extractor, SpeakerEmbedEncoder, UnitsEncoder, VolumeExtractor, MelExtractor
+from modules.extractors import F0Extractor, SpeakerEmbedEncoder, UnitsEncoder, VolumeExtractor
 
 
 class PreprocessorParameters:
@@ -152,30 +152,30 @@ def preprocess_main(root_path: str, dataset: dict[str, dict[str, str]], params: 
         del f0_extractor
         f0_extractor = None
     
-    # # units
-    # if units_extracted == False:
-    #     units_encoder = UnitsEncoder(**params.units_encoder)
-    #     units_dir = os.path.join(params.common['data_dir'], 'units')
-    #     for path in tqdm(dataset.keys(), desc='Extract units'):
-    #         audio, sr = librosa.load(os.path.join(root_path, path), sr=None)
-    #         units = units_encoder.encode(
-    #             torch.from_numpy(audio).to(params.common['device'], dtype=torch.float32).unsqueeze(0), sr, params.common['block_size'])
-    #         units_path = os.path.join(units_dir, os.path.relpath(path, start='data'))
-    #         os.makedirs(os.path.dirname(units_path), exist_ok=True)
-    #         np.savez_compressed(f'{units_path}.npz', units=units.squeeze().cpu().numpy())
-    #     del units_encoder
-    #     units_encoder = None
+    # units
+    if units_extracted == False:
+        units_encoder = UnitsEncoder(**params.units_encoder)
+        units_dir = os.path.join(params.common['data_dir'], 'units')
+        for path in tqdm(dataset.keys(), desc='Extract units'):
+            audio, sr = librosa.load(os.path.join(root_path, path), sr=None)
+            units = units_encoder.encode(
+                torch.from_numpy(audio).to(params.common['device'], dtype=torch.float32).unsqueeze(0), sr, params.common['block_size'])
+            units_path = os.path.join(units_dir, os.path.relpath(path, start='data'))
+            os.makedirs(os.path.dirname(units_path), exist_ok=True)
+            np.savez_compressed(f'{units_path}.npz', units=units.squeeze().cpu().numpy())
+        del units_encoder
+        units_encoder = None
     
-    # # volume
-    # volume_extractor = VolumeExtractor(**params.volume_extractor)
-    # volume_dir = os.path.join(params.common['data_dir'], 'volume')
-    # for path in tqdm(dataset.keys(), desc='Extract volume'):
-    #     audio, sr = librosa.load(os.path.join(root_path, path), sr=None)
-    #     volume = volume_extractor.extract(audio)
-    #     # volume_path = os.path.join(volume_dir, os.path.relpath(path, start=data_dir))
-    #     volume_path = os.path.join(volume_dir, os.path.relpath(path, start='data'))
-    #     os.makedirs(os.path.dirname(volume_path), exist_ok=True)
-    #     np.savez_compressed(f'{volume_path}.npz', volume=volume)
+    # volume
+    volume_extractor = VolumeExtractor(**params.volume_extractor)
+    volume_dir = os.path.join(params.common['data_dir'], 'volume')
+    for path in tqdm(dataset.keys(), desc='Extract volume'):
+        audio, sr = librosa.load(os.path.join(root_path, path), sr=None)
+        volume = volume_extractor.extract(audio)
+        # volume_path = os.path.join(volume_dir, os.path.relpath(path, start=data_dir))
+        volume_path = os.path.join(volume_dir, os.path.relpath(path, start='data'))
+        os.makedirs(os.path.dirname(volume_path), exist_ok=True)
+        np.savez_compressed(f'{volume_path}.npz', volume=volume)
         
     # # mel
     # if params.mel_extractor is not None:

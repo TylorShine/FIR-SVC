@@ -176,7 +176,7 @@ class FirNeXtV2(torch.nn.Module):
         self.win_length = win_length
         self.register_buffer("window", torch.hann_window(win_length))
         self.noise_env_size_downsamples = noise_env_size_downsamples
-        self.register_buffer("harmonic_env_size_downsamples", torch.tensor(harmonic_env_size_downsamples))
+        self.harmonic_env_size_downsamples = harmonic_env_size_downsamples
         self.register_buffer("use_harmonic_env", torch.tensor(use_harmonic_env))
         self.register_buffer("use_noise_env", torch.tensor(use_noise_env))
         self.register_buffer("use_speaker_embed", torch.tensor(use_speaker_embed))
@@ -184,8 +184,6 @@ class FirNeXtV2(torch.nn.Module):
         self.register_buffer("noise_seed", torch.tensor(noise_seed))
         
         self.pred_filter_size = win_length // 2 + 1
-        
-        self.gen_upsample_rates = nsf_hifigan_h.upsample_rates
         
         
         #Unit2Control

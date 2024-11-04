@@ -44,7 +44,7 @@ if __name__ == '__main__':
     
     
     # make metadatas
-    # make_metadata(args.data.dataset_path, args.data.extensions)
+    make_metadata(args.data.dataset_path, args.data.extensions)
     
     mel_vocoder_args = {}
     
@@ -88,9 +88,9 @@ if __name__ == '__main__':
         ds_test = None
     
     
-    # # process speaker embed
-    # if args.model.use_speaker_embed:
-    #     preprocess_spkinfo(args.data.dataset_path, ds_train, params=params)
+    # process speaker embed
+    if args.model.use_speaker_embed:
+        preprocess_spkinfo(args.data.dataset_path, ds_train, params=params)
         
     # process units, f0 and volume
     preprocess_main(args.data.dataset_path, ds_train, params=params)
@@ -104,5 +104,5 @@ if __name__ == '__main__':
         print("Skipping copy to pretrained weights, already exists")
     else:
         print("Copying pretrained weights...")
-        shutil.copytree("./models/pretrained/mnp-svc/states", os.path.join(args.env.expdir, "states"), dirs_exist_ok=True)
+        shutil.copytree("./models/pretrained/fir-svc/states", os.path.join(args.env.expdir, "states"), dirs_exist_ok=True)
         print("Done!")
