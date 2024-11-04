@@ -46,8 +46,6 @@ def load_model(
             use_short_filter=args.model.use_short_filter,
             use_noise_short_filter=args.model.use_noise_short_filter,
             use_pitch_aug=args.model.use_pitch_aug,
-            nsf_hifigan_in=args.model.nsf_hifigan.num_mels,
-            nsf_hifigan_h=args.model.nsf_hifigan,
             noise_seed=args.model.noise_seed,
             )
             

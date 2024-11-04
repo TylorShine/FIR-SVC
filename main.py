@@ -165,13 +165,16 @@ def split(audio, sample_rate, hop_size, db_thresh = -40, min_len = 5000, frames=
         tag = v["split_time"].split(",")
         if tag[0] != tag[1]:
             hop_frame = int((int(tag[1]) - int(tag[0])) // hop_size) if frames == None else frames
+            if hop_frame <= 0:
+                continue
             start_frame = int(int(tag[0]) // hop_size)
             end_frame = int(int(tag[1]) // hop_size)
             while end_frame > start_frame:
-                result.append((
-                        start_frame, 
-                        # audio[int(start_frame * hop_size) : int(end_frame * hop_size)]))
-                        audio[int(start_frame * hop_size) : int(min((start_frame+hop_frame), end_frame) * hop_size)]))
+                last_frame = min(end_frame, start_frame + hop_frame)
+                if last_frame >= start_frame:
+                    result.append((
+                        start_frame,
+                        audio[int(start_frame * hop_size) : int(last_frame * hop_size)]))
                 start_frame += hop_frame
     return result
 
@@ -218,9 +221,10 @@ if __name__ == '__main__':
     
     # load input
     audio, sample_rate = librosa.load(cmd.input, sr=args.data.sampling_rate)
+    print(audio.shape, audio.dtype)
     if len(audio.shape) > 1:
         audio = librosa.to_mono(audio)
-    hop_size = args.data.block_size * sample_rate / args.data.sampling_rate
+    hop_size = int(args.data.block_size * sample_rate / args.data.sampling_rate)
     
     # get MD5 hash from wav file
     md5_hash = ""
@@ -286,11 +290,6 @@ if __name__ == '__main__':
         mask = mask.numpy()
     volume = torch.from_numpy(volume).float().to(device).unsqueeze(-1).unsqueeze(0)
     
-    # load units encoder
-    if args.data.encoder == 'cnhubertsoftfish':
-        cnhubertsoft_gate = args.data.cnhubertsoft_gate
-    else:
-        cnhubertsoft_gate = 10
     units_encoder = None
     if not (args.model.distilled_stack or args.model.spec_in_stack or args.model.audio_in_stack):
         units_encoder = UnitsEncoder(
@@ -353,10 +352,11 @@ if __name__ == '__main__':
     result = np.zeros(0)
     current_length = 0
     padded_length = 0
-    segment_frames = None if (args.model.nsf_hifigan is None or args.model.type == "NMPAAHiFi" or args.model.type.startswith("Direct")) else args.model.nsf_hifigan.num_frames
+    segment_frames = None
     if segment_frames is None:
         segment_frames = cmd.segment_frames
-    segments = split(audio, sample_rate, hop_size, frames=None if (args.model.nsf_hifigan is None or args.model.type == "NMPAAHiFi" or args.model.type.startswith("Direct")) else args.model.nsf_hifigan.num_frames)
+    segments = split(audio, sample_rate, hop_size, frames=segment_frames)
+    print(segments)
     print('Cut the input audio into ' + str(len(segments)) + ' slices')
     with torch.no_grad():
         for segment in tqdm(segments):

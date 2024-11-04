@@ -81,6 +81,7 @@ class Saver(object):
             )
             self.hf_future = None
         else:
+            self.hf_future = None
             self.hf_api = None
 
 
