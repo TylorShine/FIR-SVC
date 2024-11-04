@@ -217,7 +217,7 @@ if __name__ == '__main__':
         model, args, spk_info = load_model(cmd.model_path, device=device)
     
     # load input
-    audio, sample_rate = librosa.load(cmd.input, sr=None)
+    audio, sample_rate = librosa.load(cmd.input, sr=args.data.sampling_rate)
     if len(audio.shape) > 1:
         audio = librosa.to_mono(audio)
     hop_size = args.data.block_size * sample_rate / args.data.sampling_rate
@@ -366,8 +366,6 @@ if __name__ == '__main__':
             
             # assert len(seg_input) == len(seg_units), f"Input length doesn't match encoder output length, {len(seg_input)} vs {len(seg_units)}"
             
-            # print(seg_input.shape, seg_units.shape)
-            
             seg_units = seg_units[:, :int(seg_input.size(1) // hop_size)]
                     
                     
@@ -375,33 +373,6 @@ if __name__ == '__main__':
            
             seg_f0 = f0[:, start_frame : start_frame + seg_units.size(1), :]
             seg_volume = volume[:, start_frame : start_frame + seg_units.size(1), :]
-            
-            if args.model.nsf_hifigan is not None and args.model.nsf_hifigan.num_frames is not None and (args.model.type != "NMPAAHiFi" and not args.model.type.startswith("Direct")):
-                if seg_units.size(1) < args.model.nsf_hifigan.num_frames:
-                    padded_length = int((args.model.nsf_hifigan.num_frames - seg_units.size(1) - 1) * hop_size)
-                    padding = torch.zeros(seg_units.size(0), args.model.nsf_hifigan.num_frames - seg_units.size(1), seg_units.size(2)).to(device)
-                    seg_units = torch.cat([seg_units, padding], dim=1)
-                    padding = torch.zeros(seg_f0.size(0), padding.size(1), seg_f0.size(2)).to(device)
-                    seg_f0 = torch.cat([seg_f0, padding], dim=1)
-                    padding = torch.zeros(seg_volume.size(0), padding.size(1), seg_volume.size(2)).to(device)
-                    seg_volume = torch.cat([seg_volume, padding], dim=1)
-                    
-            if args.model.type == "NMPAAHiFi" or args.model.type == "DirectNeXtV2":
-                # pad frames multiple of (4 + (len(args.model.n_layers)-1)*2)
-                # pad_len = (seg_units.size(1) % (4 + 2**(len(args.model.n_layers)-1)))
-                pad_len = (4 * 2**(len(args.model.n_layers)-1)) - (seg_units.size(1) % (4 * 2**(len(args.model.n_layers)-1)))
-                # print(pad_len, int(seg_input.size(1) // hop_size), seg_units.size(1), (4 * 2**(len(args.model.n_layers)-1)))
-                # print(pad_len, int(seg_input.size(1) // hop_size), seg_units.size(1), (4 + 2**(len(args.model.n_layers)-1)))
-                # if seg_units.size(1) < args.model.nsf_hifigan.num_frames:
-                if pad_len > 0:
-                    # print(pad_len)
-                    padding = torch.zeros(seg_units.size(0), pad_len, seg_units.size(2)).to(device)
-                    seg_units = torch.cat([seg_units, padding], dim=1)
-                    padding = torch.zeros(seg_f0.size(0), padding.size(1), seg_f0.size(2)).to(device)
-                    seg_f0 = torch.cat([seg_f0, padding], dim=1)
-                    padding = torch.zeros(seg_volume.size(0), padding.size(1), seg_volume.size(2)).to(device)
-                    seg_volume = torch.cat([seg_volume, padding], dim=1)
-                    padded_length = int((pad_len + 1) * hop_size)
             
             seg_output = model(seg_units, seg_f0, seg_volume, spk_id=spk_id, spk_mix=spk_mix)
             
