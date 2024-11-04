@@ -79,37 +79,36 @@ IF NOT EXIST "%RMVPE_PT_FILE%" (
 )
 
 
-@REM @REM download MNP-SVC pretrained weights
-@REM @REM TODO: rewrite URLs
-@REM SET MNP_PTD_OPT0_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/optimizer.bin
-@REM SET MNP_PTD_OPT1_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/optimizer_1.bin
-@REM SET MNP_PTD_MODEL0_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/pytorch_model.bin
-@REM SET MNP_PTD_MODEL1_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/pytorch_model_1.bin
-@REM SET MNP_PTD_MODEL2_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/pytorch_model_2.bin
-@REM SET MNP_PTD_RND0_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/random_states_0.pkl
-@REM SET MNP_PTD_SCHED0_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/scheduler.bin
-@REM SET MNP_PTD_SCHED1_DIR=https://huggingface.co/TylorShine/MNP-SVC-v2-pretrained/resolve/main/states/cp0/scheduler_1.bin
-@REM SET MNP_PTD_DIR=%DOWNLOAD_MODEL_DIR%\mnp-svc\states\cp0
-@REM IF NOT EXIST "%MNP_PTD_DIR%" (
-@REM     ECHO Info: Start downloading the MNP-SVC pretrained weights...
-@REM     ECHO .
-@REM     mkdir "%MNP_PTD_DIR%"
-@REM     CD /d "%MNP_PTD_DIR%"
-@REM     curl -L -O "%MNP_PTD_OPT0_DIR%"
-@REM     curl -L -O "%MNP_PTD_OPT1_DIR%"
-@REM     curl -L -O "%MNP_PTD_MODEL0_DIR%"
-@REM     curl -L -O "%MNP_PTD_MODEL1_DIR%"
-@REM     curl -L -O "%MNP_PTD_MODEL2_DIR%"
-@REM     curl -L -O "%MNP_PTD_RND0_DIR%"
-@REM     curl -L -O "%MNP_PTD_SCHED0_DIR%"
-@REM     curl -L -O "%MNP_PTD_SCHED1_DIR%"
-@REM     IF %ERRORLEVEL% neq 0 (
-@REM         ECHO .
-@REM         ECHO Error: Failed to download the MNP-SVC pretrained weights...
-@REM         EXIT /b
-@REM     )
-@REM     CD /d %~dp0
-@REM )
+@REM download FIR-SVC pretrained weights
+SET MNP_PTD_OPT0_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/optimizer.bin
+SET MNP_PTD_OPT1_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/optimizer_1.bin
+SET MNP_PTD_MODEL0_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/pytorch_model.bin
+SET MNP_PTD_MODEL1_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/pytorch_model_1.bin
+SET MNP_PTD_MODEL2_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/pytorch_model_2.bin
+SET MNP_PTD_RND0_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/random_states_0.pkl
+SET MNP_PTD_SCHED0_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/scheduler.bin
+SET MNP_PTD_SCHED1_DIR=https://huggingface.co/TylorShine/FIR-SVC-pretrained/resolve/main/states/cp0/scheduler_1.bin
+SET MNP_PTD_DIR=%DOWNLOAD_MODEL_DIR%\fir-svc\states\cp0
+IF NOT EXIST "%MNP_PTD_DIR%" (
+    ECHO Info: Start downloading the FIR-SVC pretrained weights...
+    ECHO .
+    mkdir "%MNP_PTD_DIR%"
+    CD /d "%MNP_PTD_DIR%"
+    curl -L -O "%MNP_PTD_OPT0_DIR%"
+    curl -L -O "%MNP_PTD_OPT1_DIR%"
+    curl -L -O "%MNP_PTD_MODEL0_DIR%"
+    curl -L -O "%MNP_PTD_MODEL1_DIR%"
+    curl -L -O "%MNP_PTD_MODEL2_DIR%"
+    curl -L -O "%MNP_PTD_RND0_DIR%"
+    curl -L -O "%MNP_PTD_SCHED0_DIR%"
+    curl -L -O "%MNP_PTD_SCHED1_DIR%"
+    IF %ERRORLEVEL% neq 0 (
+        ECHO .
+        ECHO Error: Failed to download the FIR-SVC pretrained weights...
+        EXIT /b
+    )
+    CD /d %~dp0
+)
 
 @REM @REM download MNP-SVC weights pretrained on VCTK dataset
 @REM @REM TODO: rewrite URLs
