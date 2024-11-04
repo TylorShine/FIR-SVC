@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-from torch.nn.utils.parametrizations import weight_norm
+# from torch.nn.utils.parametrizations import weight_norm
 
-from .convnext_v2_like import GRN, ConvNeXtV2LikeEncoder, ConvNeXtV2GLULikeEncoder, LayerNorm1d
-from .convnext_like import ConvNeXtLikeEncoder, ConvNeXtGLULikeEncoder
+from .convnext_v2_like import GRN, ConvNeXtV2GLULikeEncoder
 
 
 def split_to_dict(tensor, tensor_splits):
@@ -46,7 +45,7 @@ class Unit2ControlGE2E_onnx:
         return split_to_dict(torch.from_numpy(e).to(self.device), self.output_splits), None
     
     
-class Unit2ControlGE2ESignal8(nn.Module):
+class Unit2ControlGE2ESignal(nn.Module):
     def __init__(
             self,
             input_channel,

@@ -6,7 +6,8 @@ import torch
 
 from modules.common import load_config, load_model
 # from modules.vocoder import CombSubMinimumNoisedPhase
-from modules.vocoder import CombSubMinimumNoisedPhase_export
+# from modules.vocoder import CombSubMinimumNoisedPhase_export
+from modules.vocoder import FirNeXtV2
 
 
 def parse_args(args=None, namespace=None):
@@ -59,9 +60,8 @@ if __name__ == '__main__':
         
     # load model
     model = None
-    if args.model.type == 'CombSubMinimumNoisedPhase':
-        # model = CombSubMinimumNoisedPhase(
-        model = CombSubMinimumNoisedPhase_export(
+    if args.model.type == 'FirNeXtV2':
+        model = FirNeXtV2(
             sampling_rate=args.data.sampling_rate,
             block_size=args.data.block_size,
             win_length=args.model.win_length,
@@ -88,7 +88,6 @@ if __name__ == '__main__':
             use_pitch_aug=args.model.use_pitch_aug,
             noise_seed=args.model.noise_seed,
             export_onnx=True)
-        # )
             
     else:
         raise ValueError(f" [x] Unknown Model: {args.model.type}")

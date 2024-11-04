@@ -5,11 +5,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import yaml
-from torch.nn.utils.parametrizations import weight_norm
 
-from modules.common import DotDict, complex_mul_in_real_3d
-
-from modules.convnext_v2_like import ConvNeXtV2GLULikeEncoder, ConvNeXtV2LikeEncoder, LayerNorm1d
+from modules.common import DotDict
 
 
 def load_model(
@@ -220,9 +217,9 @@ class FirNeXtV2(torch.nn.Module):
                                             use_embed_conv=use_embed_conv,
                                             embed_conv_channels=64, conv_stack_middle_size=32)
         else:
-            from .unit2control import Unit2ControlGE2ESignal8
+            from .unit2control import Unit2ControlGE2ESignal
             
-            self.unit2ctrl = Unit2ControlGE2ESignal8(n_unit, spk_embed_channels, split_map,
+            self.unit2ctrl = Unit2ControlGE2ESignal(n_unit, spk_embed_channels, split_map,
                                             block_size=block_size,
                                             n_hidden_channels=n_hidden_channels,
                                             n_layers=n_layers,
@@ -301,11 +298,13 @@ class FirNeXtV2(torch.nn.Module):
         noise = (self.static_noise_t*.3162).unsqueeze(0).repeat(harmonic_source.shape[0], (harmonic_source.shape[1]*harmonic_source.shape[2])//self.static_noise_t.shape[0] + 1)[:, :harmonic_source.shape[1]*harmonic_source.shape[2]]
         noise = noise.view_as(harmonic_source)
         
+        
         # parameter prediction
         ctrls, hidden = self.unit2ctrl(units_frames, f0_frames, phase_frames, volume_frames,
                                        spk_id=spk_id, spk_mix=spk_mix, aug_shift=aug_shift)
         
         
+        # filter harmonic source
         harmonic_source_short_t = F.pad(harmonic_source, (self.win_length//4, self.win_length//4-1)).unsqueeze(1)
         
         bi, bj, c, d = harmonic_source_short_t.shape
@@ -314,9 +313,7 @@ class FirNeXtV2(torch.nn.Module):
         harmonic_filt_kernel_short = harmonic_filt_kernel_short_v.view(bi*harmonic_filt_kernel_short_v.shape[1], 1, -1)
         harmonic_source_short = F.conv1d(harmonic_source_short_t, harmonic_filt_kernel_short, groups=bi*harmonic_filt_kernel_short_v.shape[1]).view(bj, bi, harmonic_filt_kernel_short_v.shape[1], -1).squeeze(0)
         
-        output_size = f0.shape[1] + self.win_length//4
-        
-        
+        # filter noise source
         noise_source_t = noise.view(noise.shape[0], -1, self.block_size)
         noise_source_t = F.pad(noise_source_t, (self.win_length//4, self.win_length//4-1)).unsqueeze(1)
         bi, bj, c, d = noise_source_t.shape
@@ -324,6 +321,8 @@ class FirNeXtV2(torch.nn.Module):
         noise_filt_kernel_v = ctrls['noise_filt_kernel'].reshape(bi, -1, self.win_length//4)
         noise_filt_kernel = noise_filt_kernel_v.view(bi*noise_filt_kernel_v.shape[1], 1, -1)
         noise = F.conv1d(noise_source_t, noise_filt_kernel, groups=bi*noise_filt_kernel_v.shape[1]).view(bj, bi, noise_filt_kernel_v.shape[1], -1).squeeze(0)
+        
+        # overlap and add
         output_size = f0.shape[1] + self.win_length//4
         noise = F.fold(
             (noise + harmonic_source_short).transpose(2, 1),
@@ -331,6 +330,7 @@ class FirNeXtV2(torch.nn.Module):
             kernel_size=(1, self.block_size + self.win_length//4),
             stride=(1, self.block_size)).squeeze(1).squeeze(1)[:, :f0.shape[1]]
         
+        # filter conviened harmonic+noise source
         harmonic_source_t = (noise).view(harmonic_source_short.shape[0], -1, self.block_size)
         harmonic_source_t = F.pad(harmonic_source_t, (self.win_length, self.win_length-1)).unsqueeze(1)
         bi, bj, c, d = harmonic_source_t.shape
