@@ -1,0 +1,10 @@
+*
+!.gitignore
+!**/.gitkeep
+!pretrained
+!pretrained/dphubert
+!pretrained/pyannote.audio
+!pretrained/pyannote.audio/wespeaker-voxceleb-resnet34-LM
+!pretrained/rmvpe
+!pretrained/phrex
+!pretrained/mnp-svc
