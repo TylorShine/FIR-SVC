@@ -356,7 +356,6 @@ if __name__ == '__main__':
     if segment_frames is None:
         segment_frames = cmd.segment_frames
     segments = split(audio, sample_rate, hop_size, frames=segment_frames)
-    print(segments)
     print('Cut the input audio into ' + str(len(segments)) + ' slices')
     with torch.no_grad():
         for segment in tqdm(segments):
